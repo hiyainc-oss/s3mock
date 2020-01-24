@@ -2,6 +2,7 @@ package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
 import java.util
+import java.util.concurrent.Executors
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -10,9 +11,8 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.model._
 import com.amazonaws.util.IOUtils
 
-import scala.collection.parallel.CollectionConverters._
 import scala.jdk.CollectionConverters._
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Random, Try}
 
@@ -159,8 +159,18 @@ class GetPutObjectTest extends S3MockTest {
     it should "not fail concurrent requests" in {
       s3.createBucket("concurrent")
       s3.putObject("concurrent", "file/name", "contents")
-      val results = Range(1, 100).par.map(_ => IOUtils.toString(s3.getObject("concurrent", "file/name").getObjectContent)).toList
-      results.forall(_ == "contents") shouldBe true
+      val threadpool = Executors.newFixedThreadPool(50)
+      implicit val ec = ExecutionContext.fromExecutor(threadpool)
+      try {
+        val results = Await.result(Future.sequence(
+          Range(1, 100).map(_ => Future {
+            IOUtils.toString(s3.getObject("concurrent", "file/name").getObjectContent)
+          }).toList
+        ), 30.seconds)
+        results.forall(_ == "contents") shouldBe true
+      } finally {
+        threadpool.shutdown()
+      }
     }
   }
 
