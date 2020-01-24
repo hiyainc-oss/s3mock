@@ -27,17 +27,7 @@ libraryDependencies ++= Seq(
   "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.2" % "test"
 )
 
-libraryDependencies ++= {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, major)) if major >= 13 =>
-      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0" % "test")
-    case _ =>
-      Seq()
-  }
-}
-
 parallelExecution in Test := false
-
 
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -45,4 +35,12 @@ bintrayRepository := "maven"
 bintrayOrganization := Some("hiyainc-oss")
 bintrayReleaseOnPublish in ThisBuild := false
 resolvers += Resolver.bintrayRepo("hiyainc-oss", "maven")
-bintrayPackageLabels := Seq("scala", "collection")
+bintrayPackageLabels := Seq("scala", "test", "mock")
+
+
+enablePlugins(JavaAppPackaging, DockerPlugin)
+
+packageName in Docker := "s3mock"
+dockerExposedPorts := Seq(8001)
+dockerUsername in Docker := Some("hiya")
+
