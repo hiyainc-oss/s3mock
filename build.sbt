@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % "10.1.10",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2",
   "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
   "com.github.pathikrit" %% "better-files" % "3.8.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
